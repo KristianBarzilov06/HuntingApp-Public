@@ -1,0 +1,150 @@
+import { StyleSheet } from 'react-native';
+
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: '#334603',
+    paddingBottom: 20,
+    marginTop: -10,
+    paddingTop: 20,
+    paddingLeft: 10,
+    paddingRight: 10,
+    zIndex: 9,
+    justifyContent: 'space-between',
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: 20,
+    marginLeft: -200,
+    marginTop: 30,
+  },
+  profileInfo: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  profilePicture: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#242c0f',
+  },
+  userEmail: {
+    fontSize: 16,
+    color: '#666',
+  },
+  profileDetailsContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    margin: 20,
+    marginTop: 5,
+    marginBottom: -5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#334603',
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  input: {
+    borderColor: '#ddd',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  editButton: {
+    backgroundColor: '#8FBA1D',
+    padding: 10,
+    margin: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  editButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  trophyContainer: {
+    marginVertical: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+  },
+  trophyImage: {
+    width: 100,
+    height: 100,
+    marginTop: 10,
+  },
+  addButton: {
+    padding: 10,
+    backgroundColor: '#007BFF',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  logoutButton: {
+    position: 'absolute',
+    left: 20,
+    top: 30,
+    padding: 10,
+    backgroundColor: '#FF3B30',
+    borderRadius: 5,
+  },
+  logoutButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 10,
+  },
+  equipmentContainer: {
+    marginBottom: 15,
+  },
+  galleryImage: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  checkboxContainer: {
+    marginBottom: 15,
+  },
+  checkboxItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkboxText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#334603',
+  },
+  datePickerButton: {
+    backgroundColor: '#d4e157',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+});

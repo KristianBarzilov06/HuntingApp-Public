@@ -1,12 +1,11 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, setLogLevel } from "firebase/app";
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { FIREBASE_API_KEY } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
-  apiKey: FIREBASE_API_KEY,
+  apiKey:"AIzaSyDR9KZhydET4e0PJ7vv_0t9r09rONX6wdg",
   authDomain: "huntingappchat-88aa7.firebaseapp.com",
   projectId: "huntingappchat-88aa7",
   storageBucket: "huntingappchat-88aa7.appspot.com",
@@ -19,6 +18,7 @@ const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
+setLogLevel('debug');
 const firestore = getFirestore(app);
 const storage = getStorage(app);
 

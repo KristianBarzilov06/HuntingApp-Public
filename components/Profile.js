@@ -6,15 +6,18 @@ import {
   Image,
   ScrollView,
   TextInput,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { Checkbox } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as ImagePicker from 'expo-image-picker';
 import { PropTypes } from 'prop-types';
-import styles from '../src/styles/ProfileStyles.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { saveProfileData, loadProfileData } from '../src/utils/firestoreUtils';
 import { auth } from '../firebaseConfig';
+import styles from '../src/styles/ProfileStyles.js';
 
 const Profile = ({ route, navigation }) => {
   const userEmail = route.params?.userEmail || auth.currentUser?.email || '';
@@ -23,8 +26,7 @@ const Profile = ({ route, navigation }) => {
   const [user, setUser] = useState({
     name: 'Кристиян Бързилов',
     email: userEmail,
-    /* eslint-disable-next-line no-undef */
-    profilePicture: require('../images/IMG_20230701_185012_979.jpg'),
+    profilePicture: null,
   });
 
   // Полета за профила
@@ -38,10 +40,9 @@ const Profile = ({ route, navigation }) => {
   const [isGroupHunting, setIsGroupHunting] = useState(false);
   const [isSelectiveHunting, setIsSelectiveHunting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [newProfilePicture, setNewProfilePicture] = useState(null);
   const [showLicenseDatePicker, setShowLicenseDatePicker] = useState(false);
   const [showNotesDatePicker, setShowNotesDatePicker] = useState(false);
-
   const dogOptions = ['Дратхаар', 'Гонче', 'Кокершпаньол'];
 
   useEffect(() => {
@@ -58,6 +59,10 @@ const Profile = ({ route, navigation }) => {
           setGallery(profileData.gallery || []);
           setIsGroupHunting(profileData.isGroupHunting || false);
           setIsSelectiveHunting(profileData.isSelectiveHunting || false);
+          setUser((prevUser) => ({
+            ...prevUser,
+            profilePicture: profileData.profilePicture || null,
+          }));
         }
       } catch (error) {
         console.error('Грешка при зареждане на данни:', error.message);
@@ -78,14 +83,83 @@ const Profile = ({ route, navigation }) => {
       gallery,
       isGroupHunting,
       isSelectiveHunting,
+      profilePicture: newProfilePicture || user.profilePicture,
     };
 
     try {
+      if (newProfilePicture) {
+        console.log('Започва качване на нова снимка в Firebase Storage...');
+        const storage = getStorage();
+      
+        console.log('URI за качване:', newProfilePicture);
+        const response = await fetch(newProfilePicture);
+        if (!response.ok) {
+          throw new Error('URI е недостъпен. Проверете валидността на файла.');
+        }
+        const blob = await response.blob();
+        console.log('Blob е създаден успешно. Размер:', blob.size);
+        console.log('MIME тип на файла:', blob.type);
+      
+        const fileRef = ref(storage, `profilePictures/${userId}`);
+        console.log('FileRef Path:', fileRef.fullPath);
+        await uploadBytes(fileRef, blob);
+      
+        const downloadUrl = await getDownloadURL(fileRef);
+        console.log('Успешно качване. Firebase URL:', downloadUrl);
+      
+        profileData.profilePicture = downloadUrl; // Актуализиране на профилната снимка
+      }
+
+      console.log('Записване на данни в Firestore:', profileData);
       await saveProfileData(userId, profileData);
-      console.log('Профилът е успешно запазен!');
+
+      console.log('Успешно записване в Firestore. Актуализиране на състоянието...');
+      setUser((prevUser) => ({ ...prevUser, profilePicture: profileData.profilePicture }));
       setIsEditing(false);
+      console.log('Профилът е успешно обновен!');
     } catch (error) {
-      console.error('Грешка при записването на профила:', error.message);
+      console.error('Грешка при запазването:', error.message);
+      Alert.alert('Грешка', 'Неуспешно записване на профила.');
+    }
+  };
+  
+
+  const handleProfilePictureChange = async () => {
+    if (!isEditing) {
+      console.log('Промяната на профилната снимка е неактивна извън режим на редактиране.');
+      return;
+    }
+
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert('Нужно е разрешение', 'Моля, дайте разрешение за достъп до галерията.');
+      return;
+    }
+
+    try {
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      console.log('Резултат от ImagePicker:', pickerResult);
+
+      if (!pickerResult.canceled) {
+        const selectedImage = pickerResult.assets && pickerResult.assets[0];
+        if (selectedImage?.uri) {
+          console.log('Нов URI на изображението:', selectedImage.uri);
+          setNewProfilePicture(selectedImage.uri);
+        } else {
+          console.error('URI е недефиниран, въпреки че изборът не е отказан.');
+        }
+      } else {
+        console.log('Изборът на изображение е отказан.');
+      }
+    } catch (error) {
+      console.error('Грешка при избора на изображение:', error.message);
+      Alert.alert('Грешка', 'Неуспешно избиране на изображение. Опитайте отново.');
     }
   };
 
@@ -151,7 +225,23 @@ const Profile = ({ route, navigation }) => {
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer} style={styles.scrollView}>
         <View style={styles.profileInfo}>
-          <Image source={user.profilePicture} style={styles.profilePicture} />
+        <TouchableOpacity onPress={handleProfilePictureChange}>
+            {isEditing ? (
+            <TouchableOpacity onPress={handleProfilePictureChange}>
+              {newProfilePicture ? (
+                <Image source={{ uri: newProfilePicture }} style={styles.profilePicture} />
+              ) : user.profilePicture ? (
+                <Image source={{ uri: user.profilePicture }} style={styles.profilePicture} />
+              ) : (
+                <Ionicons name="person-circle" size={100} color="gray" />
+              )}
+            </TouchableOpacity>
+          ) : user.profilePicture ? (
+            <Image source={{ uri: user.profilePicture }} style={styles.profilePicture} />
+          ) : (
+            <Ionicons name="person-circle" size={100} color="gray" />
+          )}
+          </TouchableOpacity>
           <Text style={styles.userName}>{user.name}</Text>
           <Text style={styles.userEmail}>{user.email}</Text>
         </View>

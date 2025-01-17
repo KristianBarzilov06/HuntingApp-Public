@@ -43,6 +43,7 @@ const Profile = ({ route, navigation }) => {
   const [newProfilePicture, setNewProfilePicture] = useState(null);
   const [showLicenseDatePicker, setShowLicenseDatePicker] = useState(false);
   const [showNotesDatePicker, setShowNotesDatePicker] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const dogOptions = ['Дратхаар', 'Гонче', 'Кокершпаньол'];
 
   useEffect(() => {
@@ -59,6 +60,7 @@ const Profile = ({ route, navigation }) => {
           setGallery(profileData.gallery || []);
           setIsGroupHunting(profileData.isGroupHunting || false);
           setIsSelectiveHunting(profileData.isSelectiveHunting || false);
+          
           setUser((prevUser) => ({
             ...prevUser,
             profilePicture: profileData.profilePicture || null,
@@ -105,6 +107,9 @@ const Profile = ({ route, navigation }) => {
       await saveProfileData(userId, profileData);
       setUser((prevUser) => ({ ...prevUser, profilePicture: profileData.profilePicture }));
       setIsEditing(false);
+
+      setShowPopup(true);
+      setTimeout(() => setShowPopup(false), 3000);
     } catch (error) {
       Alert.alert('Грешка', `Неуспешно записване на профила: ${error.message}`);
     }
@@ -155,8 +160,7 @@ const Profile = ({ route, navigation }) => {
       setUser({
         name: '',
         email: '',
-        /* eslint-disable-next-line no-undef */
-        profilePicture: require('../images/IMG_20230701_185012_979.jpg'),
+        profilePicture: newProfilePicture || user.profilePicture,
       });
       navigation.reset({
         index: 0,
@@ -199,8 +203,18 @@ const Profile = ({ route, navigation }) => {
     setEquipment(updatedEquipment);
   };
 
+  // eslint-disable-next-line react/prop-types
+  const Popup = ({ message }) => {
+    return (
+      <View style={styles.popupContainer}>
+        <Text style={styles.popupText}>{message}</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
+        {showPopup && <Popup message="Промените са запазени успешно!" />}
         <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={30} color="white" />
@@ -403,6 +417,7 @@ const Profile = ({ route, navigation }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      {showPopup && <Popup message="Промените са запазени успешно!" />}
     </View>
   );
 };

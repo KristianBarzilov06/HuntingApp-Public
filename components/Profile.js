@@ -74,6 +74,7 @@ const Profile = ({ route, navigation }) => {
 
   const handleSaveChanges = async () => {
     const profileData = {
+      profilePicture: newProfilePicture || user.profilePicture,
       bio,
       licenseType,
       huntingLicense,
@@ -83,43 +84,29 @@ const Profile = ({ route, navigation }) => {
       gallery,
       isGroupHunting,
       isSelectiveHunting,
-      profilePicture: newProfilePicture || user.profilePicture,
     };
-
+  
     try {
       if (newProfilePicture) {
-        console.log('Започва качване на нова снимка в Firebase Storage...');
         const storage = getStorage();
-      
-        console.log('URI за качване:', newProfilePicture);
         const response = await fetch(newProfilePicture);
         if (!response.ok) {
           throw new Error('URI е недостъпен. Проверете валидността на файла.');
         }
         const blob = await response.blob();
-        console.log('Blob е създаден успешно. Размер:', blob.size);
-        console.log('MIME тип на файла:', blob.type);
-      
+  
         const fileRef = ref(storage, `profilePictures/${userId}`);
-        console.log('FileRef Path:', fileRef.fullPath);
         await uploadBytes(fileRef, blob);
-      
+  
         const downloadUrl = await getDownloadURL(fileRef);
-        console.log('Успешно качване. Firebase URL:', downloadUrl);
-      
-        profileData.profilePicture = downloadUrl; // Актуализиране на профилната снимка
+        profileData.profilePicture = downloadUrl;
       }
-
-      console.log('Записване на данни в Firestore:', profileData);
+  
       await saveProfileData(userId, profileData);
-
-      console.log('Успешно записване в Firestore. Актуализиране на състоянието...');
       setUser((prevUser) => ({ ...prevUser, profilePicture: profileData.profilePicture }));
       setIsEditing(false);
-      console.log('Профилът е успешно обновен!');
     } catch (error) {
-      console.error('Грешка при запазването:', error.message);
-      Alert.alert('Грешка', 'Неуспешно записване на профила.');
+      Alert.alert('Грешка', `Неуспешно записване на профила: ${error.message}`);
     }
   };
   
